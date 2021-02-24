@@ -1,6 +1,8 @@
 package generator
 
 import (
+	"github.com/spf13/afero"
+	"github.com/spf13/viper"
 	"testing"
 )
 
@@ -17,9 +19,13 @@ func TestNewNewService(t *testing.T) {
 		{name: "test service", args: args{name: "test"}, want: nil},
 		{name: "test2 service", args: args{name: "test2"}, want: nil},
 	}
+
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := NewNewService(tt.args.name).Generate(); got != tt.want {
+			if viper.GetBool("gk_testing") {
+				NewNewService(tt.args.name).(*NewService).fs.Fs = afero.NewOsFs()
+			}
+			if got := NewNewService(tt.args.name).(*NewService).Generate(); got != tt.want {
 				t.Errorf("NewNewService() = %v, want %v", got, tt.want)
 			}
 
