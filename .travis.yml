@@ -4,6 +4,7 @@ env:
   - GO111MODULE=on
 
 before_install:
+  - go mod vendor
   - go get github.com/mattn/goveralls
   - go get github.com/modocache/gover
   - go get github.com/Masterminds/glide
