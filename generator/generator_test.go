@@ -128,3 +128,45 @@ func TestBaseGenerator_AddImportsToFile(t *testing.T) {
 		})
 	}
 }
+
+func TestBaseGenerator_CreateFolderStructure(t *testing.T) {
+	type fields struct {
+		srcFile *jen.File
+		code    *PartialGenerator
+		fs      *fs.KitFs
+	}
+	type args struct {
+		path string
+	}
+	tests := []struct {
+		name    string
+		fields  fields
+		args    args
+		wantErr bool
+	}{
+		{
+			name: "foo",
+			fields: fields{
+				srcFile: nil,
+				code:    nil,
+				fs:      fs.Get(),
+			},
+			args: args{
+				path: "test2/pkg/service",
+			},
+			wantErr: false,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			b := &BaseGenerator{
+				srcFile: tt.fields.srcFile,
+				code:    tt.fields.code,
+				fs:      tt.fields.fs,
+			}
+			if err := b.CreateFolderStructure(tt.args.path); (err != nil) != tt.wantErr {
+				t.Errorf("CreateFolderStructure() error = %v, wantErr %v", err, tt.wantErr)
+			}
+		})
+	}
+}

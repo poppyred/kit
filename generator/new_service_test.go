@@ -2,23 +2,27 @@ package generator
 
 import (
 	"testing"
-
-	. "github.com/smartystreets/goconvey/convey"
 )
 
 func TestNewNewService(t *testing.T) {
 	setDefaults()
-	g := NewNewService("test").(*NewService)
-	err := g.Generate()
-	Convey("Test if generator generates the service without errors", t, func() {
-		So(err, ShouldBeError)
-		Convey("Test if file destination and file path are right", func() {
-			So(g.destPath, ShouldEqual, "test/pkg/service")
-			So(g.filePath, ShouldEqual, "test/pkg/service/service.go")
+	type args struct {
+		name string
+	}
+	tests := []struct {
+		name string
+		args args
+		want error
+	}{
+		{name: "test service", args: args{name: "test"}, want: nil},
+		{name: "test2 service", args: args{name: "test2"}, want: nil},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := NewNewService(tt.args.name).Generate(); got != tt.want {
+				t.Errorf("NewNewService() = %v, want %v", got, tt.want)
+			}
+
 		})
-		Convey("Test if file is generated", func() {
-			f, _ := g.fs.ReadFile("test/pkg/service/service.go")
-			So(f, ShouldContainSubstring, "TestService")
-		})
-	})
+	}
 }

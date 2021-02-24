@@ -3,6 +3,8 @@ package fs
 import (
 	"fmt"
 	"os"
+	"path"
+	"time"
 
 	"github.com/Songmu/prompter"
 	"github.com/sirupsen/logrus"
@@ -20,7 +22,17 @@ type KitFs struct {
 func (f *KitFs) init(dir string) {
 	var inFs afero.Fs
 	if viper.GetBool("gk_testing") {
-		inFs = afero.NewMemMapFs()
+		unix := fmt.Sprintf("%d", time.Now().UnixNano())
+		testWorkPath := path.Join(os.TempDir(), "gk_test_work", unix)
+		err := os.MkdirAll(testWorkPath, os.ModePerm)
+		if err != nil {
+			logrus.Panic(err)
+		}
+		err = os.Chdir(testWorkPath)
+		if err != nil {
+			logrus.Panic(err)
+		}
+		inFs = afero.NewOsFs()
 	} else {
 		if viper.GetString("gk_folder") != "" {
 			inFs = afero.NewBasePathFs(afero.NewOsFs(), viper.GetString("gk_folder"))
