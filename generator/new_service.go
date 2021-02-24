@@ -41,8 +41,12 @@ func NewNewService(name string) Gen {
 
 // Generate will run the generator.
 func (g *NewService) Generate() error {
-	g.CreateFolderStructure(g.destPath)
-	err := g.genModule()
+	err := g.CreateFolderStructure(g.destPath)
+	if err != nil {
+		println(err.Error())
+		return err
+	}
+	err = g.genModule()
 	if err != nil {
 		println(err.Error())
 		return err
