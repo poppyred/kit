@@ -87,7 +87,7 @@ func (b *BaseGenerator) GenerateNameBySample(sample string, exclude []parser.Nam
 		if v.Name == name {
 			sn++
 			if sn > len(sample) {
-				sample = string(len(sample) - sn)
+				sample = string(rune(len(sample) - sn))
 			}
 			name = utils.ToLowerFirstCamelCase(sample)[:sn]
 		}
@@ -149,6 +149,7 @@ func (b *BaseGenerator) AddImportsToFile(imp []parser.NamedTypeValue, src string
 			}
 		}
 	}
+	//
 	if !found {
 		dd := ast.GenDecl{
 			TokPos: f.Package + 1,
@@ -161,16 +162,18 @@ func (b *BaseGenerator) AddImportsToFile(imp []parser.NamedTypeValue, src string
 		for _, v := range imp {
 			lastPos += len(v.Name) + len(v.Type) + 1
 			iSpec := &ast.ImportSpec{
-				Name:   &ast.Ident{Name: v.Name},
+				Name: &ast.Ident{
+					NamePos: token.Pos(4),
+					Name:    v.Name,
+					Obj:     nil,
+				},
 				Path:   &ast.BasicLit{Value: v.Type},
 				EndPos: token.Pos(lastPos),
 			}
 			dd.Specs = append(dd.Specs, iSpec)
-
 		}
 		f.Decls = append([]ast.Decl{&dd}, f.Decls...)
 	}
-
 	// Sort the imports
 	ast.SortImports(fset, f)
 	var buf bytes.Buffer

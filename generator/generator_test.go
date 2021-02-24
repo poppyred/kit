@@ -1,7 +1,10 @@
 package generator
 
 import (
+	"github.com/dave/jennifer/jen"
+	"github.com/kujtimiihoxha/kit/fs"
 	"path"
+	"testing"
 
 	"runtime"
 
@@ -67,4 +70,61 @@ func getTestServiceInterface(name string) parser.Interface {
 			},
 		),
 	})
+}
+
+// fix #7
+func TestBaseGenerator_AddImportsToFile(t *testing.T) {
+	type fields struct {
+		srcFile *jen.File
+		code    *PartialGenerator
+		fs      *fs.KitFs
+	}
+	type args struct {
+		imp []parser.NamedTypeValue
+		src string
+	}
+	tests := []struct {
+		name    string
+		fields  fields
+		args    args
+		want    string
+		wantErr bool
+	}{
+		{
+			name:   "test gen dmw",
+			fields: fields{},
+			args: args{
+				imp: []parser.NamedTypeValue{
+					{
+						Name:  "",
+						Type:  "\"context\"",
+						Value: "",
+					}, {
+						Name:  "log",
+						Type:  "\"github.com/go-kit/kit/log\"",
+						Value: "",
+					},
+				},
+				src: "package service\n\ntype Middleware func(TestService) TestService\n\n\ttype loggingMiddleware struct {\n\t\tlogger log.Logger\n\t\tnext   TestService\n\t}\n\n\t// LoggingMiddleware takes a logger as a dependency\n\t// and returns a TestService Middleware.\n\tfunc LoggingMiddleware(logger log.Logger) Middleware {\n\t\treturn func(next TestService) TestService {\n\t\t\treturn &loggingMiddleware{logger, next}\n\t\t}\n\n\t}\n\n\tfunc (l loggingMiddleware) Foo(ctx context.Context, s string) (rs string, err error) {\n\t\tdefer func() {\n\t\t\tl.logger.Log(\"method\", \"Foo\", \"s\", s, \"rs\", rs, \"err\", err)\n\t\t}()\n\t\treturn l.next.Foo(ctx, s)\n\t} \n",
+			},
+			want: "package service\n\nimport (\n\t\"context\"\n\tlog \"github.com/go-kit/kit/log\"\n)\n\ntype Middleware func(TestService) TestService\n\ntype loggingMiddleware struct {\n\tlogger log.Logger\n\tnext   TestService\n}\n\nfunc LoggingMiddleware(logger log.Logger) Middleware {\n\treturn func(next TestService) TestService {\n\t\treturn &loggingMiddleware{logger, next}\n\t}\n\n}\n\nfunc (l loggingMiddleware) Foo(ctx context.Context, s string) (rs string, err error) {\n\tdefer func() {\n\t\tl.logger.Log(\"method\", \"Foo\", \"s\", s, \"rs\", rs, \"err\", err)\n\t}()\n\treturn l.next.Foo(ctx, s)\n}\n",
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			b := &BaseGenerator{
+				srcFile: tt.fields.srcFile,
+				code:    tt.fields.code,
+				fs:      tt.fields.fs,
+			}
+			got, err := b.AddImportsToFile(tt.args.imp, tt.args.src)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("AddImportsToFile() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+			if got != tt.want {
+				t.Errorf("AddImportsToFile() got = %v, want %v", got, tt.want)
+			}
+		})
+	}
 }
