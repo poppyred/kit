@@ -1668,7 +1668,7 @@ func (g *generateCmd) generateRun() (*PartialGenerator, error) {
 	pg.Raw().Id("logger").Op("=").Qual("github.com/go-kit/kit/log", "With").Call(
 		jen.Id("logger"),
 		jen.Lit("ts"),
-		jen.Qual("github.com/go-kit/kit/log", "DefaultTimestampUTC"),
+		jen.Qual("github.com/go-kit/kit/log", "DefaultTimestamp"),
 	).Line()
 	pg.Raw().Id("logger").Op("=").Qual("github.com/go-kit/kit/log", "With").Call(
 		jen.Id("logger"),

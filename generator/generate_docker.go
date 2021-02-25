@@ -127,17 +127,25 @@ func (g *GenerateDocker) generateDockerFile(name, svcFilePath, httpFilePath, grp
 	if !isService {
 		return
 	}
-	dockerFile := `FROM golang
+	dockerFile := `FROM golang:alpine as builder
+WORKDIR /build
+COPY ./%s /build/
+RUN sed -i 's/dl-cdn.alpinelinux.org/mirrors.aliyun.com/g' /etc/apk/repositories && \
+    apk add --no-cache upx ca-certificates tzdata && \
+    go env -w GOPROXY='https://goproxy.cn' && \
+    go mod vendor && \
+    GOOS=linux CGO_ENABLED=0 go build -ldflags="-s -w" -o server cmd/main.go && \
+    upx --best server -o _upx_server && \
+    mv -f _upx_server server
 
-RUN mkdir -p %s
-
-ADD . %s
-RUN go env -w GO111MODULE=on
-RUN go env -w GOPROXY=https://goproxy.cn,direct
-RUN go mod vendor
-RUN go get  github.com/canthefason/go-watcher
-
-ENTRYPOINT  watcher -run %s/%s/cmd  -watch %s/%s
+FROM scratch as server
+WORKDIR /workspace
+COPY --from=builder  /build/server /workspace/
+COPY --from=builder /usr/share/zoneinfo /usr/share/zoneinfo
+COPY --from=builder /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/
+ENV TZ=Asia/Shanghai
+EXPOSE 8080 8081 808
+ENTRYPOINT ["./server"]
 `
 	if g.glide {
 		dockerFile = `FROM golang
@@ -164,8 +172,11 @@ ENTRYPOINT  watcher -run %s/%s/cmd -watch %s/%s
 		dockerFile = fmt.Sprintf(dockerFile, fpath, fpath, fpath, pth, name, pth, name)
 
 	} else {
-		dockerFile = fmt.Sprintf(dockerFile, fpath, fpath, pth, name, pth, name)
+		dockerFile = fmt.Sprintf(dockerFile, name)
 	}
+	//else {
+	//	dockerFile = fmt.Sprintf(dockerFile, fpath, fpath, pth, name, pth, name)
+	//}
 	return g.fs.WriteFile(path.Join(name, "Dockerfile"), dockerFile, true)
 }
 
@@ -206,9 +217,9 @@ func (g *GenerateDocker) addToDockerCompose(name, pth, httpFilePath, grpcFilePat
 			},
 			Restart:       "always",
 			ContainerName: name,
-			Volumes: []string{
-				".:" + pth,
-			},
+			//Volumes: []string{
+			//	".:" + pth,
+			//},
 		}
 		if hasHTTP {
 			httpExpose := 8800
