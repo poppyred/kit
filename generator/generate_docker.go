@@ -132,10 +132,10 @@ func (g *GenerateDocker) generateDockerFile(name, svcFilePath, httpFilePath, grp
 RUN mkdir -p %s
 
 ADD . %s
-
-RUN go get  -t -v ./...
+RUN go env -w GO111MODULE=on
+RUN go env -w GOPROXY=https://goproxy.cn,direct
+RUN go mod vendor
 RUN go get  github.com/canthefason/go-watcher
-RUN go install github.com/canthefason/go-watcher/cmd/watcher
 
 ENTRYPOINT  watcher -run %s/%s/cmd  -watch %s/%s
 `

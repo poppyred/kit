@@ -61,7 +61,10 @@ func (g *NewService) Generate() error {
 	g.code.Raw().Commentf("%s describes the service.", g.interfaceName).Line()
 	g.code.appendInterface(
 		g.interfaceName,
-		[]jen.Code{partial.Raw()},
+		[]jen.Code{jen.Id("Status").Params(
+			jen.Id("ctx").Qual("context", "Context"),
+		).Params(jen.Id("err").Error()),
+			partial.raw},
 	)
 
 	return g.fs.WriteFile(g.filePath, g.srcFile.GoString(), false)
@@ -81,9 +84,8 @@ func (g *NewService) genModule() error {
 		moduleNameSlice[len(moduleNameSlice)-1] = utils.ToLowerSnakeCase(moduleNameSlice[len(moduleNameSlice)-1])
 		moduleName = strings.Join(moduleNameSlice, "/")
 	}
-	cmdStr := "cd " + prjName + " && go mod init " + moduleName
+	cmdStr := "cd " + prjName + " && go mod init " + moduleName + " && go mod vendor"
 	cmd := exec.Command("sh", "-c", cmdStr)
-
 	var stderr bytes.Buffer
 	cmd.Stderr = &stderr
 
