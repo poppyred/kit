@@ -1,11 +1,11 @@
 package cmd
 
 import (
-	"github.com/kujtimiihoxha/kit/generator"
-	"github.com/kujtimiihoxha/kit/utils"
 	"github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
+	"kit/generator"
+	"kit/utils"
 )
 
 var methods []string

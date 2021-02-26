@@ -2,15 +2,15 @@ package generator
 
 import (
 	"github.com/dave/jennifer/jen"
-	"github.com/kujtimiihoxha/kit/fs"
+	"kit/fs"
 	"path"
 	"testing"
 
 	"runtime"
 
-	"github.com/kujtimiihoxha/kit/parser"
-	"github.com/kujtimiihoxha/kit/utils"
 	"github.com/spf13/viper"
+	"kit/parser"
+	"kit/utils"
 )
 
 func setDefaults() {

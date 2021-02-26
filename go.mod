@@ -1,4 +1,4 @@
-module github.com/kujtimiihoxha/kit
+module kit
 
 go 1.12
 
@@ -7,7 +7,7 @@ require (
 	github.com/Songmu/prompter v0.0.0-20181014095714-d227c68538bd
 	github.com/alioygur/godash v0.0.0-20160919141744-af6b3da41c5a
 	github.com/canthefason/go-watcher v0.2.4 // indirect
-	github.com/dave/jennifer v1.3.0
+	github.com/dave/jennifer v1.4.1
 	github.com/emicklei/proto v1.6.10
 	github.com/emicklei/proto-contrib v0.0.0-20190206213850-73879796f936
 	github.com/fatih/color v1.10.0 // indirect

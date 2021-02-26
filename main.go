@@ -4,8 +4,8 @@ import (
 	"path"
 	"runtime"
 
-	"github.com/kujtimiihoxha/kit/cmd"
 	"github.com/spf13/viper"
+	"kit/cmd"
 )
 
 func main() {

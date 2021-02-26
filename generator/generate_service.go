@@ -6,11 +6,11 @@ import (
 	"strings"
 
 	"github.com/dave/jennifer/jen"
-	"github.com/kujtimiihoxha/kit/fs"
-	"github.com/kujtimiihoxha/kit/parser"
-	"github.com/kujtimiihoxha/kit/utils"
 	"github.com/sirupsen/logrus"
 	"github.com/spf13/viper"
+	"kit/fs"
+	"kit/parser"
+	"kit/utils"
 )
 
 // SupportedTransports is an array containing the supported transport types.
@@ -1813,6 +1813,12 @@ func (g *generateCmd) generateVars() {
 			jen.Lit("Debug and metrics listen address"),
 		)
 		g.code.NewLine()
+		g.code.Raw().Var().Id("consulAddr").Op("=").Id("fs").Dot("String").Call(
+			jen.Lit("consul-addr"),
+			jen.Lit("127.0.0.1:8500"),
+			jen.Lit("consul address"),
+		)
+		g.code.NewLine()
 		g.code.Raw().Var().Id("httpAddr").Op("=").Id("fs").Dot("String").Call(
 			jen.Lit("http-addr"),
 			jen.Lit(":8081"),
@@ -2092,6 +2098,26 @@ func (g *generateCmd) generateGetMiddleware() (err error) {
 	c = append(
 		c,
 		jen.Comment("Add you endpoint middleware here").Line(),
+		//	addEndpointMiddlewareToAllMethods(mw,ratelimit.NewErroringLimiter(rate.NewLimiter(rate.Every(time.Second), 1)))
+		//	addEndpointMiddlewareToAllMethods(mw,circuitbreaker.Gobreaker(gobreaker.NewCircuitBreaker(gobreaker.Settings{})))
+		jen.Id("addEndpointMiddlewareToAllMethods").Call(
+			jen.Id("mw"),
+			jen.Qual("github.com/go-kit/kit/ratelimit", "NewErroringLimiter").Call(
+				jen.Qual("golang.org/x/time/rate", "NewLimiter").Call(
+					jen.Qual("golang.org/x/time/rate", "Every").Call(jen.Qual("time", "Second")),
+					jen.Lit(1),
+				),
+			),
+		),
+		jen.Id("addEndpointMiddlewareToAllMethods").Call(
+			jen.Id("mw"),
+			jen.Qual("github.com/go-kit/kit/circuitbreaker", "Gobreaker").Call(
+				jen.Qual("github.com/sony/gobreaker", "NewCircuitBreaker").Call(
+					jen.Qual("golang.org/x/time/rate", "Every").Call(jen.Qual("time", "Second")),
+					jen.Lit(1),
+				),
+			),
+		),
 		jen.Return(),
 	)
 	g.code.appendFunction(
